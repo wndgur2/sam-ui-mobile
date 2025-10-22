@@ -36,8 +36,5 @@
     "dev": "vite ./example --open",
     "build": "vite build",
     "prepublishOnly": "npm run build"
-  },
-  "dependencies": {
-    "eslint-plugin-react-refresh": "^0.4.24"
   }
 }
