@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 
 export default defineConfig([
   globalIgnores(["dist/*"]),
-  reactHooks.configs.flat.recommended,
   eslint.configs.recommended,
   tseslint.configs.recommended,
+  reactHooks.configs.flat.recommended,
 ]);
