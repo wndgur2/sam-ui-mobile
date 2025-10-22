@@ -2,14 +2,15 @@ import { useCallback, useState } from 'react'
 import { Modal, ModalOptions } from './types'
 import { useModal } from '../../hooks/useModal'
 import { ModalContext } from './ModalContext'
+import { deepOverride } from '../../utils/deepOverride'
 
 const DEFAULT_MODAL_WRAPPER_ATTRIBUTES: React.HTMLAttributes<HTMLDivElement> = {
   style: {
     position: 'fixed',
     top: 0,
     left: 0,
-    width: '100%',
-    height: '100%',
+    width: '100dvw',
+    height: '100dvh',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -18,31 +19,12 @@ const DEFAULT_MODAL_WRAPPER_ATTRIBUTES: React.HTMLAttributes<HTMLDivElement> = {
 
 type Props = {
   children: React.ReactNode
-  /**
-   * Attributes for the modal wrapper element.
-   * @defaultValue
-    ```
-    {
-      style: {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      },
-    }
-    ```
-   */
   wrapperAttributes?: React.HTMLAttributes<HTMLDivElement>
 }
 
-export function ModalProvider({
-  children,
-  wrapperAttributes = DEFAULT_MODAL_WRAPPER_ATTRIBUTES,
-}: Props) {
+export function ModalProvider({ children, wrapperAttributes = {} }: Props) {
+  wrapperAttributes = deepOverride(wrapperAttributes, DEFAULT_MODAL_WRAPPER_ATTRIBUTES)
+
   const [modals, setModals] = useState<Map<number, Modal[]>>(new Map())
 
   const openModal = useCallback((content: React.ReactNode, { z = 1 }: ModalOptions = {}) => {
