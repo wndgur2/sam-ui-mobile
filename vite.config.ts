@@ -2,6 +2,7 @@
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import path from "node:path";
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   build: {
@@ -21,6 +22,12 @@ export default defineConfig({
       entryRoot: "src",
       outDir: "dist",
       insertTypesEntry: true
-    })
+    }),
+
+    react({
+      babel: {
+        plugins: ['babel-plugin-react-compiler'],
+      },
+    }),
   ]
 });

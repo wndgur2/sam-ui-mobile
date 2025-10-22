@@ -1,12 +1,11 @@
-import { createContext } from 'react'
-import { ModalOptions } from './types'
+import { createContext, useEffect } from 'react'
+
+const hello = 'a'
 
 /** 모달을 여는 함수 시그니처 */
 type OpenModal = (
   /** 모달 내부에 렌더링할 React 노드 */
-  content: React.ReactNode,
-  /** 모달 동작/레이아웃 옵션. @see ModalOptions */
-  options?: ModalOptions
+  content: React.ReactNode
 ) => void
 
 /** 모달을 닫는 함수 시그니처 */

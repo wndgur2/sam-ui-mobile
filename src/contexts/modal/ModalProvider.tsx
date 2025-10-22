@@ -1,10 +1,10 @@
-import { useCallback, useState } from 'react'
-import { Modal, ModalOptions } from './types'
+import { createRef, useCallback, useEffect, useState } from 'react'
+import { Modal } from './types'
 import { useModal } from '../../hooks/useModal'
 import { ModalContext } from './ModalContext'
 import { deepOverride } from '../../utils/deepOverride'
 
-const DEFAULT_MODAL_WRAPPER_ATTRIBUTES: React.HTMLAttributes<HTMLDivElement> = {
+const MODAL_ROOT_ATTRIBUTES: React.HTMLAttributes<HTMLDivElement> = {
   style: {
     position: 'fixed',
     top: 0,
@@ -17,71 +17,94 @@ const DEFAULT_MODAL_WRAPPER_ATTRIBUTES: React.HTMLAttributes<HTMLDivElement> = {
   },
 }
 
+const MODAL_BACKDROP_ATTRIBUTES: React.HTMLAttributes<HTMLDivElement> = deepOverride(
+  {
+    style: {
+      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    },
+  },
+  MODAL_ROOT_ATTRIBUTES
+)
+
 type Props = {
   children: React.ReactNode
-  wrapperAttributes?: React.HTMLAttributes<HTMLDivElement>
+  containerAttributes?: React.HTMLAttributes<HTMLDivElement>
+  backdropAttributes?: React.HTMLAttributes<HTMLDivElement>
+  beforeClose?: (ref?: React.RefObject<HTMLDivElement>) => Promise<void> | void
 }
 
-export function ModalProvider({ children, wrapperAttributes = {} }: Props) {
-  wrapperAttributes = deepOverride(wrapperAttributes, DEFAULT_MODAL_WRAPPER_ATTRIBUTES)
+export function ModalProvider({
+  children,
+  containerAttributes = {},
+  backdropAttributes = {},
+  beforeClose,
+}: Props) {
+  containerAttributes = deepOverride(containerAttributes, MODAL_ROOT_ATTRIBUTES)
+  backdropAttributes = deepOverride(backdropAttributes, MODAL_BACKDROP_ATTRIBUTES)
 
-  const [modals, setModals] = useState<Map<number, Modal[]>>(new Map())
+  const [modals, setModals] = useState<Modal[]>([])
 
-  const openModal = useCallback((content: React.ReactNode, { z = 1 }: ModalOptions = {}) => {
-    const newModal = { content }
+  const openModal = useCallback((content: React.ReactNode) => {
+    const newModal = { content, ref: createRef<HTMLDivElement>() }
     setModals((prev) => {
-      const newModals = new Map<number, Modal[]>(prev)
-      const prevModalsAtZ = prev.get(z)
-      if (prevModalsAtZ) newModals.set(z, [newModal, ...prevModalsAtZ])
-      else newModals.set(z, [newModal])
+      const newModals = [...prev, newModal]
       return newModals
     })
   }, [])
 
-  const closeModal = useCallback(() => {
-    setModals((prev) => {
-      const newModals = new Map<number, Modal[]>(prev)
-      console.log('version2')
-      const maxZ = Math.max(...Array.from(newModals.keys()))
-      const updatedModalsAtZ = newModals.get(maxZ)!.slice(1)
-      if (updatedModalsAtZ.length > 0) newModals.set(maxZ, updatedModalsAtZ)
-      else newModals.delete(maxZ)
-      return newModals
-    })
-  }, [])
+  const closeModal = useCallback(async () => {
+    let top = modals[modals.length - 1]
+
+    if (!top) return
+
+    await beforeClose?.(top.ref)
+
+    setModals((prev) => prev.slice(0, -1))
+  }, [beforeClose, modals])
 
   return (
     <ModalContext.Provider value={{ openModal, closeModal }}>
       {children}
-      <ModalsRenderer modals={modals} {...wrapperAttributes} />
+      <ModalsRenderer modals={modals} {...{ containerAttributes, backdropAttributes }} />
     </ModalContext.Provider>
   )
 }
 
 type ModalsRendererProps = {
-  modals: Map<number, Modal[]>
-} & React.HTMLAttributes<HTMLDivElement>
+  modals: Modal[]
+  containerAttributes: React.HTMLAttributes<HTMLDivElement>
+  backdropAttributes: React.HTMLAttributes<HTMLDivElement>
+}
 
-function ModalsRenderer({ modals, ...rest }: ModalsRendererProps) {
-  const sortedZs = Array.from(modals.keys()).sort((a, b) => a - b)
+function ModalsRenderer({ modals, containerAttributes, backdropAttributes }: ModalsRendererProps) {
   const { closeModal } = useModal()
+
+  if (modals.length === 0) return null
+
+  const underModals = modals.slice(0, -1)
+  const topModal = modals[modals.length - 1]
 
   return (
     <>
-      {sortedZs.map((z) =>
-        modals.get(z)!.map((modal, index) => (
+      <div id="modals-container" {...containerAttributes}>
+        {underModals.map((modal) => (
+          <div ref={modal.ref}>{modal.content}</div>
+        ))}
+        {
           <div
-            key={`modal-${z}-${index}`}
+            ref={topModal.ref}
+            id="modal-backdrop"
             onClick={(e) => {
-              e.stopPropagation()
               closeModal()
             }}
-            {...rest}
+            {...backdropAttributes}
           >
-            <div onClick={(e) => e.stopPropagation()}>{modal.content}</div>
+            <div id="top-modal-wrapper" onClick={(e) => e.stopPropagation()}>
+              {topModal.content}
+            </div>
           </div>
-        ))
-      )}
+        }
+      </div>
     </>
   )
 }
