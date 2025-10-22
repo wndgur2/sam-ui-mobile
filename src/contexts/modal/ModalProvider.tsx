@@ -89,10 +89,9 @@ function ModalsRenderer({ modals, containerAttributes, backdropAttributes }: Mod
             <div
               ref={modal.ref}
               id="modal-backdrop"
-              onClick={() => {
-                closeModal()
-              }}
+              onClick={closeModal}
               {...backdropAttributes}
+              key={index}
             >
               <div id="top-modal-wrapper" onClick={(e) => e.stopPropagation()}>
                 {modal.content}
