@@ -1,6 +1,4 @@
-import { createContext, useEffect } from 'react'
-
-const hello = 'a'
+import { createContext } from 'react'
 
 /** 모달을 여는 함수 시그니처 */
 type OpenModal = (

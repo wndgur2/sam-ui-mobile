@@ -1,4 +1,4 @@
-import { createRef, useCallback, useEffect, useState } from 'react'
+import { createRef, useCallback, useState } from 'react'
 import { Modal } from './types'
 import { useModal } from '../../hooks/useModal'
 import { ModalContext } from './ModalContext'
