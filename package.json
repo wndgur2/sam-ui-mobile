@@ -15,6 +15,7 @@
     "react-dom": ">=17 || >=18"
   },
   "devDependencies": {
+    "@eslint/js": "^9.38.0",
     "@types/node": "^24.7.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
@@ -22,8 +23,10 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9.38.0",
     "eslint-plugin-react-hooks": "^7.0.0",
+    "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.4.0",
     "typescript": "^5.6.0",
+    "typescript-eslint": "^8.46.2",
     "vite": "^5.4.0",
     "vite-plugin-dts": "^3.9.0"
   },
@@ -34,10 +37,10 @@
   ],
   "scripts": {
     "dev": "vite ./example --open",
-    "build": "vite build",
+    "build": "pnpm eslint && vite build",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "eslint-plugin-react-refresh": "^0.4.24"
+    "eslint-plugin-react": "^7.37.5"
   }
 }

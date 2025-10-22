@@ -1,4 +1,4 @@
-import { createRef, useCallback, useEffect, useState } from 'react'
+import { createRef, useCallback, useState } from 'react'
 import { Modal } from './types'
 import { useModal } from '../../hooks/useModal'
 import { ModalContext } from './ModalContext'
@@ -53,7 +53,7 @@ export function ModalProvider({
   }, [])
 
   const closeModal = useCallback(async () => {
-    let top = modals[modals.length - 1]
+    const top = modals[modals.length - 1]
 
     if (!top) return
 
@@ -81,29 +81,26 @@ function ModalsRenderer({ modals, containerAttributes, backdropAttributes }: Mod
 
   if (modals.length === 0) return null
 
-  const underModals = modals.slice(0, -1)
-  const topModal = modals[modals.length - 1]
-
   return (
     <>
       <div id="modals-container" {...containerAttributes}>
-        {underModals.map((modal) => (
-          <div ref={modal.ref}>{modal.content}</div>
-        ))}
-        {
-          <div
-            ref={topModal.ref}
-            id="modal-backdrop"
-            onClick={(e) => {
-              closeModal()
-            }}
-            {...backdropAttributes}
-          >
-            <div id="top-modal-wrapper" onClick={(e) => e.stopPropagation()}>
-              {topModal.content}
+        {modals.map((modal, index) =>
+          index === modals.length - 1 ? (
+            <div
+              ref={modal.ref}
+              id="modal-backdrop"
+              onClick={closeModal}
+              {...backdropAttributes}
+              key={index}
+            >
+              <div id="top-modal-wrapper" onClick={(e) => e.stopPropagation()}>
+                {modal.content}
+              </div>
             </div>
-          </div>
-        }
+          ) : (
+            <div ref={modal.ref}>{modal.content}</div>
+          )
+        )}
       </div>
     </>
   )
